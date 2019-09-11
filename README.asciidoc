@@ -1,0 +1,57 @@
+= Test of RabbitMQ
+
+ docker build -f Dockerfile.3.6 -t rabbitmq-docker-toomanycpu:3.6 .
+ docker build -f Dockerfile.3.7 -t rabbitmq-docker-toomanycpu:3.7 .
+ docker build -f Dockerfile.3.8 -t rabbitmq-docker-toomanycpu:3.8 .
+
+== Launch of RabbitMQ
+
+=== Without variables
+
+ docker run -d --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.6
+ docker run -d --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.7
+ docker run -d --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.8
+
+=== With RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+sbwt none"
+
+ docker run -d -e RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+sbwt none" --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.6
+ docker run -d -e RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+sbwt none" --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.7
+ docker run -d -e RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+sbwt none" --rm --name rabbitmq-docker-toomanycpu rabbitmq-docker-toomanycpu:3.8
+
+
+
+== Run the test
+
+ docker exec -ti rabbitmq-docker-toomanycpu bash
+
+ cd /tmp
+ python create_queues.python
+
+When it's done, check with top the process
+
+ top
+
+check the CPU.
+
+Then launch the HA :
+
+  rabbitmqctl set_policy ha-all ".*" '{"ha-mode":"all"}'
+
+And check again the CPU :
+
+ top
+
+In my computer (i7, ubuntu), it fly to 37% (without sbwt none) and 15% (with sbwt none)
+
+=== With more queues
+
+with 10000 queues, cpu fly to 10% without ha, 125% with ha
+
+== Stop the test
+
+ docker rm -fv rabbitmq-docker-toomanycpu
+
+
+== See
+
+https://github.com/rabbitmq/rabbitmq-server/issues/1713

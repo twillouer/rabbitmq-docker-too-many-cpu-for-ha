@@ -1,0 +1,8 @@
+FROM rabbitmq:3.6.15-management
+
+RUN apt-get update && apt-get install -y python-pip
+
+RUN pip install pika
+
+COPY create_queues.python /tmp/create_queues.python
+
